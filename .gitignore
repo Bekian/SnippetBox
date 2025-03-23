@@ -1,0 +1,16 @@
+# Ignore .env file
+.env
+
+# Ignore Go build artifacts
+/bin/
+/obj/
+
+# Ignore Go test output
+*.test
+*.out
+
+# Ignore system files (macOS/Windows)
+.DS_Store
+Thumbs.db
+
+# will add more once i get more into the sql part of the book
