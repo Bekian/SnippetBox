@@ -9,6 +9,7 @@ import (
 
 // define a home handler func which writes a byte slice as the res body
 func home(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Server", "Go")
 	w.Write([]byte("Hello from SnippetBox!"))
 }
 
@@ -21,8 +22,7 @@ func snippetView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	msg := fmt.Sprintf("Displaying a snippet with ID: %d", id)
-	w.Write([]byte(msg))
+	fmt.Fprintf(w, "Displaying a snippet with ID: %d", id)
 }
 
 // create a snippet
@@ -30,12 +30,18 @@ func snippetCreate(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("creating a snippet"))
 }
 
+func snippetCreatePost(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusCreated)
+	w.Write([]byte(""))
+}
+
 func main() {
 	// create a servemux and assign the home (base/root) route
 	mux := http.NewServeMux()
-	mux.HandleFunc("/{$}", home)
-	mux.HandleFunc("/snippet/view/{id}", snippetView) // add ID wildcard segment
-	mux.HandleFunc("/snippet/create", snippetCreate)
+	mux.HandleFunc("GET /{$}", home)
+	mux.HandleFunc("GET /snippet/view/{id}", snippetView)
+	mux.HandleFunc("GET /snippet/create", snippetCreate)
+	mux.HandleFunc("POST /snippet/create", snippetCreatePost)
 	// log start
 	log.Println("Starting server on :8080")
 	// listen and serve
