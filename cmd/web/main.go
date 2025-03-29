@@ -7,6 +7,10 @@ import (
 	"os"
 )
 
+type application struct {
+	logger *slog.Logger
+}
+
 func main() {
 	/// config
 	// addr port string uses the 4000 port by default
@@ -15,20 +19,13 @@ func main() {
 	// logger init
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
-	// router
-	mux := http.NewServeMux()
-	fileServer := http.FileServer(http.Dir("./ui/static/"))
-	// serve static files
-	mux.Handle("GET /static/", http.StripPrefix("/static", fileServer))
-
-	mux.HandleFunc("GET /{$}", home)
-	mux.HandleFunc("GET /snippet/view/{id}", snippetView)
-	mux.HandleFunc("GET /snippet/create", snippetCreate)
-	mux.HandleFunc("POST /snippet/create", snippetCreatePost)
+	app := &application{
+		logger: logger,
+	}
 
 	// server
 	logger.Info("starting server", "addr", *addr)
-	err := http.ListenAndServe(*addr, mux)
+	err := http.ListenAndServe(*addr, app.routes())
 	logger.Error(err.Error())
 	os.Exit(1)
 }
