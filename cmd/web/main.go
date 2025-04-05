@@ -20,7 +20,7 @@ type application struct {
 
 func main() {
 	/// config
-	// addr port string uses the 4000 port by default
+	// addr port string uses the 8080 port by default
 	addr := flag.String("addr", ":8080", "HTTP network address")
 	// dsn string for mysql connection
 	dsn := flag.String("dsn", "web:1234@/snippetbox?parseTime=true", "MySQL data source name string")

@@ -8,8 +8,9 @@ import (
 
 // dep injection struct for holding template data
 type templateData struct {
-	Snippet  models.Snippet
-	Snippets []models.Snippet
+	CurrentYear int
+	Snippet     models.Snippet
+	Snippets    []models.Snippet
 }
 
 func newTemplateCache() (map[string]*template.Template, error) {
@@ -32,7 +33,7 @@ func newTemplateCache() (map[string]*template.Template, error) {
 		}
 
 		// this loads the partials onto the base template set
-		ts, err = ts.ParseGlob("./ui/html/templates/*.tmpl")
+		ts, err = ts.ParseGlob("./ui/html/partials/*.tmpl")
 		if err != nil {
 			return nil, err
 		}
