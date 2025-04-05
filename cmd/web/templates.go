@@ -1,10 +1,20 @@
 package main
 
 import (
-	"github.com/Bekian/SnippetBox/internal/models"
 	"html/template"
 	"path/filepath"
+	"time"
+
+	"github.com/Bekian/SnippetBox/internal/models"
 )
+
+func humanDate(t time.Time) string {
+	return t.Format("02 Jan 2006 at 15:04")
+}
+
+var functions = template.FuncMap{
+	"humanDate": humanDate,
+}
 
 // dep injection struct for holding template data
 type templateData struct {
@@ -27,7 +37,9 @@ func newTemplateCache() (map[string]*template.Template, error) {
 		name := filepath.Base(page)
 
 		// parse base template into a template set
-		ts, err := template.ParseFiles("./ui/html/base.tmpl")
+		// we also have to add the function map into the templates
+		// so we can reference them inside templates
+		ts, err := template.New(name).Funcs(functions).ParseFiles("./ui/html/base.tmpl")
 		if err != nil {
 			return nil, err
 		}
