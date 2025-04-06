@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 )
 
@@ -29,6 +30,23 @@ func (app *application) logRequest(next http.Handler) http.Handler {
 		)
 
 		app.logger.Info("request received", "ip", ip, "proto", proto, "method", method, "uri", uri)
+		next.ServeHTTP(w, r)
+	})
+}
+
+func (app *application) recoverPanic(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// this uses the defer keyword somewhat elegantly to catch errors
+		// when the process is going up the stack
+		// though tbh it feels a bit cheat-y
+		defer func() {
+			if err := recover(); err != nil {
+				// this tells the server to close the connection after ther response
+				w.Header().Set("Connection", "close")
+				app.serverError(w, r, fmt.Errorf("%s", err))
+			}
+		}()
+
 		next.ServeHTTP(w, r)
 	})
 }
