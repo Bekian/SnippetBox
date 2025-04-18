@@ -3,14 +3,10 @@ package main
 import (
 	"errors"
 	"fmt"
-	"net/http"
-	"strconv"
-	"strings"
-	"unicode/utf8"
-
-	"fyne.io/fyne/data/validation"
 	"github.com/Bekian/SnippetBox/internal/models"
 	"github.com/Bekian/SnippetBox/internal/validator"
+	"net/http"
+	"strconv"
 )
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
@@ -60,11 +56,14 @@ func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 	app.render(w, r, http.StatusOK, "create.tmpl", data)
 }
 
+// i dont really like that we're using a library to abstract the decoding away into a third party library
+// but it does cut down on the boilerplate a lot
+// and save me the hassle of writing my own library
 type snippetCreateForm struct {
-	Title   string
-	Content string
-	Expires int
-	validator.Validator
+	Title               string `form:"title"`
+	Content             string `form:"content"`
+	Expires             int    `form:"expires"`
+	validator.Validator `form:"-"`
 }
 
 func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request) {
@@ -75,20 +74,17 @@ func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	// retreive and convert expiration
-	expires, err := strconv.Atoi(r.PostForm.Get("expires"))
+	// init form creation struct
+	var form snippetCreateForm
+
+	// decode the form and pass the form struct pointer and the form
+	err = app.decodePostForm(r, &form)
 	if err != nil {
 		app.clientError(w, http.StatusBadRequest)
 		return
 	}
 
-	// form validation:
-	form := snippetCreateForm{
-		Title:   r.PostForm.Get("title"),
-		Content: r.PostForm.Get("content"),
-		Expires: expires,
-	}
-
+	// validate the form using the decoded form struct
 	form.CheckField(validator.NotBlank(form.Title), "title", "This field cannot be blank")
 	form.CheckField(validator.MaxChars(form.Title, 100), "title", "This field cannot be more than 100 characters long")
 	form.CheckField(validator.NotBlank(form.Content), "content", "This field cannot be blank")
