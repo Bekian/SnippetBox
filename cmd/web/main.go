@@ -7,18 +7,22 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/Bekian/SnippetBox/internal/models"
 
+	"github.com/alexedwards/scs/mysqlstore"
+	"github.com/alexedwards/scs/v2"
 	"github.com/go-playground/form/v4"
 	_ "github.com/go-sql-driver/mysql"
 )
 
 type application struct {
-	logger        *slog.Logger
-	snippets      *models.SnippetModel
-	templateCache map[string]*template.Template
-	formDecorder  *form.Decoder
+	logger         *slog.Logger
+	snippets       *models.SnippetModel
+	templateCache  map[string]*template.Template
+	formDecorder   *form.Decoder
+	sessionManager *scs.SessionManager
 }
 
 func main() {
@@ -50,12 +54,19 @@ func main() {
 	// init form decoder
 	formDecoder := form.NewDecoder()
 
+	// init session manager
+	// use mysql db as session store and a lifetime of 12 hours
+	sessionManager := scs.New()
+	sessionManager.Store = mysqlstore.New(db)
+	sessionManager.Lifetime = 12 * time.Hour
+
 	// pass above initialized objects to app struct for outside use
 	app := &application{
-		logger:        logger,
-		snippets:      &models.SnippetModel{DB: db},
-		templateCache: templateCache,
-		formDecorder:  formDecoder,
+		logger:         logger,
+		snippets:       &models.SnippetModel{DB: db},
+		templateCache:  templateCache,
+		formDecorder:   formDecoder,
+		sessionManager: sessionManager,
 	}
 
 	// server
