@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"database/sql"
 	"flag"
 	"html/template"
@@ -71,12 +72,18 @@ func main() {
 		sessionManager: sessionManager,
 	}
 
+	// only use these 2 curves for assembly
+	tlsConfig := &tls.Config{
+		CurvePreferences: []tls.CurveID{tls.X25519, tls.CurveP256},
+	}
+
 	// init the server struct
 	srv := &http.Server{
 		Addr:    *addr,
 		Handler: app.routes(),
 		// this writes any http server errors to the custom logger
-		ErrorLog: slog.NewLogLogger(logger.Handler(), slog.LevelError),
+		ErrorLog:  slog.NewLogLogger(logger.Handler(), slog.LevelError),
+		TLSConfig: tlsConfig,
 	}
 
 	// logger
