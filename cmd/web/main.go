@@ -56,9 +56,11 @@ func main() {
 
 	// init session manager
 	// use mysql db as session store and a lifetime of 12 hours
+	// also use set to use tls
 	sessionManager := scs.New()
 	sessionManager.Store = mysqlstore.New(db)
 	sessionManager.Lifetime = 12 * time.Hour
+	sessionManager.Cookie.Secure = true
 
 	// pass above initialized objects to app struct for outside use
 	app := &application{
@@ -79,8 +81,8 @@ func main() {
 
 	// logger
 	logger.Info("starting server", "addr", *addr)
-	// start the server
-	err = srv.ListenAndServe()
+	// start the server with tls cert and key
+	err = srv.ListenAndServeTLS("./tls/cert.pem", "./tls/key.pem")
 	// pass any errors that arise to our logger
 	logger.Error(err.Error())
 	os.Exit(1)
