@@ -73,6 +73,8 @@ func main() {
 	srv := &http.Server{
 		Addr:    *addr,
 		Handler: app.routes(),
+		// this writes any http server errors to the custom logger
+		ErrorLog: slog.NewLogLogger(logger.Handler(), slog.LevelError),
 	}
 
 	// logger
