@@ -230,7 +230,7 @@ func (app *application) userLoginPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// ad userid to context
+	// add userid to context
 	app.sessionManager.Put(r.Context(), "authenticatedUserId", id)
 	// redirect
 	http.Redirect(w, r, "/snippet/create", http.StatusSeeOther)
@@ -238,5 +238,19 @@ func (app *application) userLoginPost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) userLogoutPost(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "logout user")
+	// change session on logout
+	err := app.sessionManager.RenewToken(r.Context())
+	if err != nil {
+		app.serverError(w, r, err)
+		return
+	}
+
+	// remove id from session
+	app.sessionManager.Remove(r.Context(), "authenticatedUserID")
+
+	// add flash/toast to let the user know they've logged out
+	app.sessionManager.Put(r.Context(), "flash", "You've been logged out successfully!")
+
+	// redirect to home
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
