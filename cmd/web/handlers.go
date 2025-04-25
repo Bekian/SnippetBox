@@ -178,7 +178,7 @@ func (app *application) userSignupPost(w http.ResponseWriter, r *http.Request) {
 type userLoginForm struct {
 	Email               string `form:"email"`
 	Password            string `form:"password"`
-	validator.Validator `from:"-"`
+	validator.Validator `form:"-"`
 }
 
 func (app *application) userLogin(w http.ResponseWriter, r *http.Request) {
@@ -231,7 +231,7 @@ func (app *application) userLoginPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// add userid to context
-	app.sessionManager.Put(r.Context(), "authenticatedUserId", id)
+	app.sessionManager.Put(r.Context(), "authenticatedUserID", id)
 	// redirect
 	http.Redirect(w, r, "/snippet/create", http.StatusSeeOther)
 
