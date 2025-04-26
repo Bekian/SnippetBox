@@ -14,7 +14,7 @@ func (app *application) routes() http.Handler {
 	mux.Handle("GET /static/", http.StripPrefix("/static", fileServer))
 
 	// middleware chain for session manager logic
-	dynamic := alice.New(app.sessionManager.LoadAndSave, noSurf)
+	dynamic := alice.New(app.sessionManager.LoadAndSave, noSurf, app.authenticate)
 
 	/// server app routes with middleware chain
 	// routes that do not require auth
