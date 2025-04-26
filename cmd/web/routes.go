@@ -3,15 +3,17 @@ package main
 import (
 	"net/http"
 
+	"github.com/Bekian/SnippetBox/ui"
+
 	"github.com/justinas/alice"
 )
 
 func (app *application) routes() http.Handler {
 	// router
 	mux := http.NewServeMux()
+
 	// serve static files
-	fileServer := http.FileServer(http.Dir("./ui/static/"))
-	mux.Handle("GET /static/", http.StripPrefix("/static", fileServer))
+	mux.Handle("GET /static/", http.FileServerFS(ui.Files))
 
 	// middleware chain for session manager logic
 	dynamic := alice.New(app.sessionManager.LoadAndSave, noSurf, app.authenticate)
