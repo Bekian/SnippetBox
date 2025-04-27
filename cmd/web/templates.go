@@ -2,10 +2,12 @@ package main
 
 import (
 	"html/template"
+	"io/fs"
 	"path/filepath"
 	"time"
 
 	"github.com/Bekian/SnippetBox/internal/models"
+	"github.com/Bekian/SnippetBox/ui"
 )
 
 func humanDate(t time.Time) string {
@@ -31,7 +33,7 @@ func newTemplateCache() (map[string]*template.Template, error) {
 	// map to act as the cache
 	cache := map[string]*template.Template{}
 	// grab all files that match the following pattern
-	pages, err := filepath.Glob("./ui/html/pages/*.tmpl")
+	pages, err := fs.Glob(ui.Files, "html/pages/*.tmpl")
 	if err != nil {
 		return nil, err
 	}
@@ -40,22 +42,17 @@ func newTemplateCache() (map[string]*template.Template, error) {
 		// get the file's base name
 		name := filepath.Base(page)
 
+		// create a slice of template patterns
+		patterns := []string{
+			"html/base.tmpl",
+			"html/partials/*.tmpl",
+			page,
+		}
+
 		// parse base template into a template set
 		// we also have to add the function map into the templates
 		// so we can reference them inside templates
-		ts, err := template.New(name).Funcs(functions).ParseFiles("./ui/html/base.tmpl")
-		if err != nil {
-			return nil, err
-		}
-
-		// this loads the partials onto the base template set
-		ts, err = ts.ParseGlob("./ui/html/partials/*.tmpl")
-		if err != nil {
-			return nil, err
-		}
-
-		// add the page to the template set
-		ts, err = ts.ParseFiles(page)
+		ts, err := template.New(name).Funcs(functions).ParseFS(ui.Files, patterns...)
 		if err != nil {
 			return nil, err
 		}

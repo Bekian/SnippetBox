@@ -6,5 +6,5 @@ import (
 
 // comment directive to embed the static file into the binary
 
-//go:embed "static"
+//go:embed "html" "static"
 var Files embed.FS
