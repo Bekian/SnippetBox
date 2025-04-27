@@ -15,6 +15,8 @@ func (app *application) routes() http.Handler {
 	// serve static files
 	mux.Handle("GET /static/", http.FileServerFS(ui.Files))
 
+	mux.HandleFunc("GET /ping", ping)
+
 	// middleware chain for session manager logic
 	dynamic := alice.New(app.sessionManager.LoadAndSave, noSurf, app.authenticate)
 
